@@ -6,9 +6,13 @@
 
 其->会在编译过程中自动替换成_set，_get，或. 。
 
-使用条件：1 一行只支持一个 ->。2 不要使用++，--，+=，-= 目前不支持。
+使用条件：1 一行只支持一个 ->。2 不要使用++，-- 。3 十一种复合赋值运算符支持五种 +=，-=，*=，/=，%= 其他的不支持。
 
-使用方法：java -jar jsopp.jar tproxy.js tproxy3.js
+使用方法：
+
+java -jar jsopp.jar tproxy.js tproxy_es5.js ES5
+
+java -jar jsopp.jar tproxy.js tproxy_es6.js ES6
 
 源码见jsprocess.java
 
@@ -18,4 +22,6 @@ tproxy代码用例里以包含了大多数可能使用到的情况。
 
 添加了delete 操作符;其最终的效果要比Object.defineProperty优越一点了。支持不定义属性情况下拦截，支持拦截delete操作符。
 
-之后可以扩展一下编译器可选择编译为ES5/ES6模式。当然ES6模式直接使用原生的Proxy。
+编译器可选择编译为ES5/ES6模式。ES6模式直接使用原生的Proxy。
+
+可以实现proxy同样的代码编译到不同平台而且执行结果一致。
