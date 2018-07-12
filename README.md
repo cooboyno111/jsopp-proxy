@@ -25,3 +25,5 @@ tproxy代码用例里以包含了大多数可能使用到的情况。
 编译器可选择编译为ES5/ES6模式。ES6模式直接使用原生的Proxy。
 
 可以实现proxy同样的代码编译到不同平台而且执行结果一致。
+
+node tproxy_es5.js 和 node tproxy_es6.js 的执行结果是一致的
