@@ -112,8 +112,8 @@ public class jsprocess {
 	public void process(String[] args) {
 		try {
 			Vector<String> sv = new Vector<String>();
-			//FileInputStream in = new FileInputStream(args[0]);
-			FileInputStream in = new FileInputStream("C:/Apkdb/tproxy.js");
+			FileInputStream in = new FileInputStream(args[0]);
+			//FileInputStream in = new FileInputStream("C:/Apkdb/tproxy.js");
 			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
 			String str = null;
 			int linenum=1;
@@ -142,7 +142,7 @@ public class jsprocess {
 							str=sb.toString();
 							//将->替换为._get('
 							str=str.replace("->", "._get('");
-							//后处理
+							//后处理赋值操作
 							int indd1=str.indexOf("'");
 							int indd2=str.lastIndexOf("'");
 							if(indd1!=-1&&indd2!=-1){
@@ -154,6 +154,12 @@ public class jsprocess {
 								str=str.replace("=", "',");
 								str=str.replace("')", ")");
 							}
+							}
+							//后处理delete 操作符
+							int del_ind=str.indexOf("delete");
+							if(del_ind!=-1){
+								str=str.replace("_get", "_del");
+								str=str.replace("delete", "");
 							}
 						}else{
 						if(stt2!=-1){
@@ -193,8 +199,8 @@ public class jsprocess {
 			in.close();
 
 			// write string to file
-			FileOutputStream out = new FileOutputStream("C:/Apkdb/tproxy3.js");
-			//FileOutputStream out = new FileOutputStream(args[1]);
+			//FileOutputStream out = new FileOutputStream("C:/Apkdb/tproxy3.js");
+			FileOutputStream out = new FileOutputStream(args[1]);
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8")); 
 			for (int i = 0; i < sv.size(); i++) {
 				bw.write(sv.elementAt(i) + "\n");
