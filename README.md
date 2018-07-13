@@ -20,10 +20,8 @@ tproxy代码用例里以包含了大多数可能使用到的情况。
 
 此项目纯属是挑战不可能（IE8 不支持getter setter delete）的挑战之作。
 
-添加了delete 操作符;其效果要比ES5 Object.defineProperty优越了。多数情况下接近ES6 Proxy。支持不定义属性情况下拦截用例中我定义的是空对象 var ss={};，支持拦截delete操作符。
+添加了delete 操作符;其效果要比ES5 Object.defineProperty优越了。多数情况下接近ES6 Proxy。支持不定义属性情况下拦截，支持拦截delete操作符。
 
 编译器可选择编译为ES5/ES6模式。ES6模式直接使用原生的Proxy。
 
 可以实现proxy同样的代码编译到不同平台而且执行结果一致。
-
-node tproxy_es5.js 和 node tproxy_es6.js 的执行结果是一致的
