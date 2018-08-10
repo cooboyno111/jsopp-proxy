@@ -20,7 +20,9 @@ tproxy代码用例里以包含了大多数可能使用到的情况。
 
 此项目是在ES5基础上实现部份ES6 Proxy功能的实验作品，未使用到ES5 Object.defineProperty意味着可以支持IE8。
 
-添加了delete 操作符;其效果要比ES5 Object.defineProperty优越了。多数情况下接近ES6 Proxy。支持不定义属性情况下拦截，支持拦截delete操作符。
+添加了delete 操作符，其使用效果要比ES5 Object.defineProperty好了。
+
+多数情况下接近ES6 Proxy。支持不定义属性情况下拦截，支持拦截delete操作符。
 
 编译器可选择编译为ES5/ES6模式。ES6模式直接使用原生的Proxy。
 
