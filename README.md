@@ -1,6 +1,6 @@
 # jsopp-proxy
 
-原型链+编译器实现类似 ES6 proxy 的getter setter delete兼容所有浏览器 包括IE8。其本质是变参数调用为方法调用。
+原型链+编译器实现类似 ES6 proxy 的getter setter delete兼容IE8。其本质是变参数调用为方法调用。
 
 只有一个原则当你使用new_Proxy建立的对象的时候使用->来访问其属性和方法。你可以理解为编译器重载了->.
 
@@ -19,8 +19,6 @@ java -jar jsopp.jar tproxy.js tproxy_es6.js ES6
 tproxy代码用例里以包含了大多数可能使用到的情况。
 
 此项目是在ES5基础上实现部份ES6 Proxy功能的实验作品，未使用到ES5 Object.defineProperty意味着可以支持IE8。
-
-添加了delete 操作符，其使用效果要比ES5 Object.defineProperty好。
 
 在只使用基础拦截器的情况下（get set delete）可以直接使用ES6 Proxy方式进行开发，不用转换思维到Object.defineProperty。保证代码的鲁棒性和可读性。
 
