@@ -10,8 +10,25 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Vector;
-
+//js proxy -> 编译为ES5/ES6模式
 public class jsprocess {
+	public String head[]={
+			"function new_Proxy(obj,proxy){",
+			"if(proxy.get==undefined){",
+			"obj.pget=function(target,prop){return target[prop];};",
+			"}else{obj.pget=proxy.get;}",
+			"if(proxy.deleteProperty==undefined){",
+			"obj.pdel=function(target,prop){delete target[prop];};",
+			"}else{obj.pdel=proxy.deleteProperty;}",
+			"if(proxy.set==undefined){",
+			"obj.pset=function(target,prop,value){target[prop]=value};",
+			"}else{obj.pset=proxy.set;}",
+			"obj._get=function(key){return this.pget(this,key)};",
+			"obj._del=function(key){ this.pdel(this,key)};",
+			"obj._set=function(key,val){return this.pset(this,key,val)};",
+			"return obj;}",
+			"function aop(obj,key,op,val){var a=obj._get(key); if(op==='+='){a+=val;} else if(op==='-='){a-=val;} else if(op==='*='){a*=val;} else if(op==='/='){a/=val;} else if(op==='%='){a%=val;} return a}"
+	};
 	public  void instovec(Vector <Integer> v,int val){
 		if(val!=-1){
 			v.addElement(val);
@@ -109,11 +126,64 @@ public class jsprocess {
 		pro.end=end;
 		return pro;
 	}
-	public void process(String[] args) {
+	public void process_es6(String[] args) {
+		System.out.println("process_es6");
 		try {
 			Vector<String> sv = new Vector<String>();
 			FileInputStream in = new FileInputStream(args[0]);
-			//FileInputStream in = new FileInputStream("C:/Apkdb/tproxy.js");
+			//FileInputStream in = new FileInputStream("C:/Apkdb/tproxy0.js");
+			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+			String str = null;
+			int linenum=1;
+			while ((str = br.readLine()) != null) {
+				str=str+"\r";//为处理方便每行末尾添加换行符\r
+				int st = str.indexOf("->");
+				if (st != -1) {
+					str=str.replace("->", ".");
+					sv.add(str);
+				}else{
+					sv.add(str);
+				}
+				linenum++;
+			}
+
+			br.close();
+
+			in.close();
+
+			// write string to file
+			//FileOutputStream out = new FileOutputStream("C:/Apkdb/tproxy_es6.js");
+			FileOutputStream out = new FileOutputStream(args[1]);
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
+			// write other
+			for (int i = 0; i < sv.size(); i++) {
+				bw.write(sv.elementAt(i) + "\n");
+			}
+			bw.close();
+
+			out.close();
+
+		}
+
+		catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+
+		}
+
+		catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+	}
+	public void process_es5(String[] args) {
+		System.out.println("process_es5");
+		try {
+			Vector<String> sv = new Vector<String>();
+			FileInputStream in = new FileInputStream(args[0]);
+			//FileInputStream in = new FileInputStream("C:/Apkdb/tproxy0.js");
 			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
 			String str = null;
 			int linenum=1;
@@ -126,7 +196,12 @@ public class jsprocess {
 					if(stt1!=-1){
 						System.out.println("Process line:"+linenum+" str:"+str);
 						//这行的->表示一个方法调用使用。去替换即可
-						str=str.replace("->", ".");
+//						str=str.replace("->", ".");
+						int stt0=str.indexOf("->");
+						String midstr=str.substring(stt0,stt1);
+						str=str.replace("->", "._get('");
+						str=str.replace("()", "')()");
+						
 					}else{
 						System.out.println("Process line:"+linenum+" str:"+str);
 						//判断是get还是set
@@ -161,6 +236,66 @@ public class jsprocess {
 								str=str.replace("_get", "_del");
 								str=str.replace("delete", "");
 							}
+							//后处理+=操作符
+							int plusset=str.indexOf(")+=");
+							if(plusset!=-1){
+								String objname=str.substring(0,str.indexOf("."));
+								String midstr=str.substring(indd1+1, indd2);
+								int ed=str.indexOf(";");
+								if(ed==-1){ed=str.length();}
+								String value=str.substring(plusset+3,ed);
+								str=str.replace("_get", "_set");
+								str=str.substring(0,plusset);
+								str=str+",aop("+objname+","+"'"+midstr+"'"+","+"'+=',"+value+"));";
+							}
+							//后处理-=操作符
+							int subset=str.indexOf(")-=");
+							if(subset!=-1){
+								String objname=str.substring(0,str.indexOf("."));
+								String midstr=str.substring(indd1+1, indd2);
+								int ed=str.indexOf(";");
+								if(ed==-1){ed=str.length();}
+								String value=str.substring(subset+3,ed);
+								str=str.replace("_get", "_set");
+								str=str.substring(0,subset);
+								str=str+",aop("+objname+","+"'"+midstr+"'"+","+"'-=',"+value+"));";
+							}
+							//后处理*=操作符
+							int mulset=str.indexOf(")*=");
+							if(mulset!=-1){
+								String objname=str.substring(0,str.indexOf("."));
+								String midstr=str.substring(indd1+1, indd2);
+								int ed=str.indexOf(";");
+								if(ed==-1){ed=str.length();}
+								String value=str.substring(mulset+3,ed);
+								str=str.replace("_get", "_set");
+								str=str.substring(0,mulset);
+								str=str+",aop("+objname+","+"'"+midstr+"'"+","+"'*=',"+value+"));";
+							}
+							//后处理/=操作符
+							int divset=str.indexOf(")/=");
+							if(divset!=-1){
+								String objname=str.substring(0,str.indexOf("."));
+								String midstr=str.substring(indd1+1, indd2);
+								int ed=str.indexOf(";");
+								if(ed==-1){ed=str.length();}
+								String value=str.substring(divset+3,ed);
+								str=str.replace("_get", "_set");
+								str=str.substring(0,divset);
+								str=str+",aop("+objname+","+"'"+midstr+"'"+","+"'/=',"+value+"));";
+							}
+							//后处理%=操作符
+							int modset=str.indexOf(")%=");
+							if(modset!=-1){
+								String objname=str.substring(0,str.indexOf("."));
+								String midstr=str.substring(indd1+1, indd2);
+								int ed=str.indexOf(";");
+								if(ed==-1){ed=str.length();}
+								String value=str.substring(modset+3,ed);
+								str=str.replace("_get", "_set");
+								str=str.substring(0,modset);
+								str=str+",aop("+objname+","+"'"+midstr+"'"+","+"'%=',"+value+"));";
+							}
 						}else{
 						if(stt2!=-1){
 							//这是一个set操作
@@ -185,10 +320,16 @@ public class jsprocess {
 							str=sb.toString();
 							//将->替换为._get('
 							str=str.replace("->", "._get('");
-						}}
+						}
+					  }
 					}
 					sv.add(str);
 				}else{
+					//后处理替换new Proxy
+					int del_ind=str.indexOf("new Proxy");
+					if(del_ind!=-1){
+						str=str.replace("new Proxy", "new_Proxy");
+					}
 					sv.add(str);
 				}
 				linenum++;
@@ -201,7 +342,12 @@ public class jsprocess {
 			// write string to file
 			//FileOutputStream out = new FileOutputStream("C:/Apkdb/tproxy3.js");
 			FileOutputStream out = new FileOutputStream(args[1]);
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8")); 
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
+			// write head to file
+			for (int i = 0; i < head.length; i++) {
+				bw.write(head[i] + "\n");
+			}
+			// write other
 			for (int i = 0; i < sv.size(); i++) {
 				bw.write(sv.elementAt(i) + "\n");
 			}
@@ -223,9 +369,17 @@ public class jsprocess {
 
 		}
 	}
+	
 	public static void main(String[] args) {
 		jsprocess proc=new jsprocess();
-		proc.process(args);
-		
+		proc.process_es5(args);
+		if(args[2].equals("ES5")){
+		   proc.process_es5(args);
+		   System.out.println("process in es5 mode infile="+args[0]+" outfile="+args[1]);
+		}else
+		{
+			proc.process_es6(args);
+			System.out.println("process in es6 mode infile="+args[0]+" outfile="+args[1]);
+		}
 	}
 }
